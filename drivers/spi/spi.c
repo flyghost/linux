@@ -1432,6 +1432,9 @@ static struct class spi_master_class = {
  * the master's methods before calling spi_register_master(); and (after errors
  * adding the device) calling spi_master_put() to prevent a memory leak.
  */
+// 申请spi_master
+// dev  : 设备，一般是platform_device中的dev成员变量
+// size : 私有数据大小，可以通过spi_master_get_devdata函数获取到这些私有数据
 struct spi_master *spi_alloc_master(struct device *dev, unsigned size)
 {
 	struct spi_master	*master;
@@ -1515,6 +1518,7 @@ static int of_spi_register_master(struct spi_master *master)
  * After a successful return, the caller is responsible for calling
  * spi_unregister_master().
  */
+// spi_master注册
 int spi_register_master(struct spi_master *master)
 {
 	static atomic_t		dyn_bus_id = ATOMIC_INIT((1<<15) - 1);

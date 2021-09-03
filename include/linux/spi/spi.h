@@ -390,6 +390,8 @@ struct spi_master {
 	 * + The message transfers use clock and SPI mode parameters
 	 *   previously established by setup() for this device
 	 */
+	// 控制器数据传输函数
+	// spi控制器最终会通过该函数与SPI设备进行通信
 	int			(*transfer)(struct spi_device *spi,
 						struct spi_message *mesg);
 
@@ -431,6 +433,8 @@ struct spi_master {
 	size_t				max_dma_len;
 
 	int (*prepare_transfer_hardware)(struct spi_master *master);
+
+	// 用于发送一个spi_message，spi数据会打包成spi_message，然后以队列的方式发送出去
 	int (*transfer_one_message)(struct spi_master *master,
 				    struct spi_message *mesg);
 	int (*unprepare_transfer_hardware)(struct spi_master *master);
