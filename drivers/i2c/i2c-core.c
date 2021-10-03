@@ -1513,6 +1513,7 @@ static int __i2c_add_numbered_adapter(struct i2c_adapter *adap)
  * in adap->nr, and the specified adapter became available for clients.
  * Otherwise, a negative errno value is returned.
  */
+// 向系统注册设置好的IIC_adapter，使用动态的总线号
 int i2c_add_adapter(struct i2c_adapter *adapter)
 {
 	struct device *dev = &adapter->dev;
@@ -1562,6 +1563,7 @@ EXPORT_SYMBOL(i2c_add_adapter);
  * and the appropriate driver model device nodes are created.  Otherwise, a
  * negative errno value is returned.
  */
+// 向系统注册设置好的IIC_adapter，使用静态的总线号
 int i2c_add_numbered_adapter(struct i2c_adapter *adap)
 {
 	if (adap->nr == -1) /* -1 means dynamically assign bus id */
@@ -1715,7 +1717,10 @@ static int __process_new_driver(struct device *dev, void *data)
  * An i2c_driver is used with one or more i2c_client (device) nodes to access
  * i2c slave chips, on a bus instance associated with some i2c_adapter.
  */
-
+// i2c_driver注册函数
+// owner: 一般为THIS_MODULE
+// driver: 要注册的i2c_driver
+// 返回值：0成功、负值失败
 int i2c_register_driver(struct module *owner, struct i2c_driver *driver)
 {
 	int res;

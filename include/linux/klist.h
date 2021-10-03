@@ -18,18 +18,22 @@
 
 struct klist_node;
 struct klist {
-	spinlock_t		k_lock;
-	struct list_head	k_list;
-	void			(*get)(struct klist_node *);
-	void			(*put)(struct klist_node *);
-} __attribute__ ((aligned (sizeof(void *))));
+	spinlock_t		k_lock;							// 链接节点操作所需要的自旋锁
+	struct list_head	k_list;						// 嵌入的双向链表List
+	void			(*get)(struct klist_node *);	// 链表内节点增加引用计数
+	void			(*put)(struct klist_node *);	// 链表内节点减少引用计数
+} __attribute__ ((aligned (sizeof(void *))));		// sizeof(void*)字节对齐
+													// 如果是4字节对齐的话，说明实例地址的最低位是0
+													// 在实例中，地址的最低位具有其他作用
 
+// 对klist表头进行初始化：自旋锁、嵌入的双向链表
 #define KLIST_INIT(_name, _get, _put)					\
 	{ .k_lock	= __SPIN_LOCK_UNLOCKED(_name.k_lock),		\
 	  .k_list	= LIST_HEAD_INIT(_name.k_list),			\
 	  .get		= _get,						\
 	  .put		= _put, }
 
+// 定义一个klist，并调用初始化宏
 #define DEFINE_KLIST(_name, _get, _put)					\
 	struct klist _name = KLIST_INIT(_name, _get, _put)
 
@@ -37,9 +41,9 @@ extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		       void (*put)(struct klist_node *));
 
 struct klist_node {
-	void			*n_klist;	/* never access directly */
-	struct list_head	n_node;
-	struct kref		n_ref;
+	void			*n_klist;	// 用于指向klist链表头  /* never access directly */
+	struct list_head	n_node;	// 嵌入的双向链表list
+	struct kref		n_ref;		// Klist链表节点的引用计数器
 };
 
 extern void klist_add_tail(struct klist_node *n, struct klist *k);

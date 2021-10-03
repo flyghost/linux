@@ -280,10 +280,10 @@ static struct device *next_device(struct klist_iter *i)
 
 /**
  * bus_for_each_dev - device iterator.
- * @bus: bus type.
- * @start: device to start iterating from.
- * @data: data for the callback.
- * @fn: function to be called for each device.
+ * @bus: bus type.                             总线类型
+ * @start: device to start iterating from.     开始迭代的设备
+ * @data: data for the callback.               回调函数的值
+ * @fn: function to be called for each device. 每个设备的回调函数
  *
  * Iterate over @bus's list of devices, and call @fn for each,
  * passing it @data. If @start is not NULL, we use that device to

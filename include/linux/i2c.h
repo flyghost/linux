@@ -167,6 +167,7 @@ struct i2c_driver {
 	int (*attach_adapter)(struct i2c_adapter *) __deprecated;
 
 	/* Standard driver model interfaces */
+	// 当I2C设备和驱动匹配成功以后probe函数就会执行，和platform驱动一样
 	int (*probe)(struct i2c_client *, const struct i2c_device_id *);
 	int (*remove)(struct i2c_client *);
 
@@ -185,8 +186,9 @@ struct i2c_driver {
 	 */
 	int (*command)(struct i2c_client *client, unsigned int cmd, void *arg);
 
+	// 驱动结构体，如果使用设备树的话，需要设置device_driver的of_match_table成员变量，也就是驱动的兼容值（compatible）属性
 	struct device_driver driver;
-	const struct i2c_device_id *id_table;
+	const struct i2c_device_id *id_table;	// 这个是传统的、未使用设备树的设备匹配ID表
 
 	/* Device detection callback for automatic device creation */
 	int (*detect)(struct i2c_client *, struct i2c_board_info *);
@@ -214,15 +216,15 @@ struct i2c_driver {
  * i2c bus. The behaviour exposed to Linux is defined by the driver
  * managing the device.
  */
+// 一个设备对应一个i2c_client
 struct i2c_client {
-	unsigned short flags;		/* div., see below		*/
-	unsigned short addr;		/* chip address - NOTE: 7bit	*/
-					/* addresses are stored in the	*/
-					/* _LOWER_ 7 bits		*/
-	char name[I2C_NAME_SIZE];
-	struct i2c_adapter *adapter;	/* the adapter we sit on	*/
-	struct device dev;		/* the device structure		*/
-	int irq;			/* irq issued by device		*/
+	unsigned short flags;			/* div., see below 标志*/
+	
+	unsigned short addr;			// 芯片地址：保存在低7位，最高位不使用
+	char name[I2C_NAME_SIZE];		// 名字
+	struct i2c_adapter *adapter;	// 对应的IIC适配器
+	struct device dev;				// 设备结构体
+	int irq;						// 中断
 	struct list_head detected;
 #if IS_ENABLED(CONFIG_I2C_SLAVE)
 	i2c_slave_cb_t slave_cb;	/* callback for slave mode	*/
@@ -395,8 +397,10 @@ struct i2c_algorithm {
 	   using common I2C messages */
 	/* master_xfer should return the number of messages successfully
 	   processed, or a negative value on error */
+	// IIC适配器的传输函数
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs,
 			   int num);
+	// SMBUS总线的传输函数
 	int (*smbus_xfer) (struct i2c_adapter *adap, u16 addr,
 			   unsigned short flags, char read_write,
 			   u8 command, int size, union i2c_smbus_data *data);
@@ -498,7 +502,7 @@ struct i2c_adapter_quirks {
 struct i2c_adapter {
 	struct module *owner;
 	unsigned int class;		  /* classes to allow probing for */
-	const struct i2c_algorithm *algo; /* the algorithm to access the bus */
+	const struct i2c_algorithm *algo; /* the algorithm to access the bus 总线访问算法，对外提供读写API */
 	void *algo_data;
 
 	/* data fields that are valid for all devices	*/

@@ -45,17 +45,20 @@
 #define KNODE_DEAD		1LU
 #define KNODE_KLIST_MASK	~KNODE_DEAD
 
+// 从knode中寻找klist链表头
 static struct klist *knode_klist(struct klist_node *knode)
 {
 	return (struct klist *)
-		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);
+		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);	// 将指针最低位清零，并返回指针
 }
 
+// 检查该节点是否已被清除
 static bool knode_dead(struct klist_node *knode)
 {
-	return (unsigned long)knode->n_klist & KNODE_DEAD;
+	return (unsigned long)knode->n_klist & KNODE_DEAD;		// 判断最低位
 }
 
+// 设置节点的klist链表头
 static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 {
 	knode->n_klist = klist;
@@ -63,11 +66,12 @@ static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 	WARN_ON(knode_dead(knode));
 }
 
+// 请求删除节点
 static void knode_kill(struct klist_node *knode)
 {
 	/* and no knode should die twice ever either, see we're very humane */
 	WARN_ON(knode_dead(knode));
-	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
+	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;	// 将指针的最低位值1
 }
 
 /**
@@ -85,13 +89,14 @@ static void knode_kill(struct klist_node *knode)
 void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		void (*put)(struct klist_node *))
 {
-	INIT_LIST_HEAD(&k->k_list);
-	spin_lock_init(&k->k_lock);
+	INIT_LIST_HEAD(&k->k_list);	// 初始化双向链表
+	spin_lock_init(&k->k_lock);	// 自旋锁初始化
 	k->get = get;
 	k->put = put;
 }
 EXPORT_SYMBOL_GPL(klist_init);
 
+// 在表头后面插入节点
 static void add_head(struct klist *k, struct klist_node *n)
 {
 	spin_lock(&k->k_lock);
@@ -99,6 +104,7 @@ static void add_head(struct klist *k, struct klist_node *n)
 	spin_unlock(&k->k_lock);
 }
 
+// 在表尾插入节点
 static void add_tail(struct klist *k, struct klist_node *n)
 {
 	spin_lock(&k->k_lock);
@@ -106,6 +112,7 @@ static void add_tail(struct klist *k, struct klist_node *n)
 	spin_unlock(&k->k_lock);
 }
 
+// 初始化klist_node节点
 static void klist_node_init(struct klist *k, struct klist_node *n)
 {
 	INIT_LIST_HEAD(&n->n_node);

@@ -22,6 +22,7 @@
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
+// 初始化双向链表
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
 	list->next = list;
