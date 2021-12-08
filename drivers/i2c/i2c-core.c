@@ -442,7 +442,7 @@ static inline int acpi_i2c_install_space_handler(struct i2c_adapter *adapter)
 #endif /* CONFIG_ACPI_I2C_OPREGION */
 
 /* ------------------------------------------------------------------------- */
-
+// 传统的、无设备树的I2C设备和驱动匹配过程
 static const struct i2c_device_id *i2c_match_id(const struct i2c_device_id *id,
 						const struct i2c_client *client)
 {
@@ -454,6 +454,7 @@ static const struct i2c_device_id *i2c_match_id(const struct i2c_device_id *id,
 	return NULL;
 }
 
+// IIC总线的设备和驱动匹配
 static int i2c_device_match(struct device *dev, struct device_driver *drv)
 {
 	struct i2c_client	*client = i2c_verify_client(dev);
@@ -463,11 +464,11 @@ static int i2c_device_match(struct device *dev, struct device_driver *drv)
 		return 0;
 
 	/* Attempt an OF style match */
-	if (of_driver_match_device(dev, drv))
+	if (of_driver_match_device(dev, drv))	// 完成设备树设备和驱动匹配
 		return 1;
 
 	/* Then ACPI style match */
-	if (acpi_driver_match_device(dev, drv))
+	if (acpi_driver_match_device(dev, drv))	// 用于ACPI形式的匹配
 		return 1;
 
 	driver = to_i2c_driver(drv);
@@ -625,15 +626,15 @@ EXPORT_SYMBOL_GPL(i2c_recover_bus);
 
 static int i2c_device_probe(struct device *dev)
 {
-	struct i2c_client	*client = i2c_verify_client(dev);
+	struct i2c_client	*client = i2c_verify_client(dev);	// 获取I2C设备实体
 	struct i2c_driver	*driver;
 	int status;
 
-	if (!client)
+	if (!client)	// 判断I2C设备是否存在
 		return 0;
 
 	if (!client->irq && dev->of_node) {
-		int irq = of_irq_get(dev->of_node, 0);
+		int irq = of_irq_get(dev->of_node, 0);	// 获取设备的中断号
 
 		if (irq == -EPROBE_DEFER)
 			return irq;
@@ -647,15 +648,18 @@ static int i2c_device_probe(struct device *dev)
 	if (!driver->probe || !driver->id_table)
 		return -ENODEV;
 
+	// 判断设备是否可以唤醒
 	if (!device_can_wakeup(&client->dev))
 		device_init_wakeup(&client->dev,
 					client->flags & I2C_CLIENT_WAKE);
 	dev_dbg(dev, "probe\n");
 
+	// 设置时钟
 	status = of_clk_set_defaults(dev->of_node, false);
 	if (status < 0)
 		return status;
 
+	// 将设备附加到它对应的电源域
 	status = dev_pm_domain_attach(&client->dev, true);
 	if (status != -EPROBE_DEFER) {
 		status = driver->probe(client, i2c_match_id(driver->id_table,
@@ -735,7 +739,7 @@ ATTRIBUTE_GROUPS(i2c_dev);
 
 struct bus_type i2c_bus_type = {
 	.name		= "i2c",
-	.match		= i2c_device_match,
+	.match		= i2c_device_match,		// IIC总线的设备和驱动匹配
 	.probe		= i2c_device_probe,
 	.remove		= i2c_device_remove,
 	.shutdown	= i2c_device_shutdown,
@@ -758,10 +762,11 @@ static struct device_type i2c_client_type = {
  * about the nodes you find.  Use this function to avoid oopses caused
  * by wrongly treating some non-I2C device as an i2c_client.
  */
+// 返回I2C设备实体
 struct i2c_client *i2c_verify_client(struct device *dev)
 {
-	return (dev->type == &i2c_client_type)
-			? to_i2c_client(dev)
+	return (dev->type == &i2c_client_type)	// 判断是否是I2C设备
+			? to_i2c_client(dev)			// 返回I2C设备实体
 			: NULL;
 }
 EXPORT_SYMBOL(i2c_verify_client);

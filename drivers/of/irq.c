@@ -393,6 +393,7 @@ EXPORT_SYMBOL_GPL(of_irq_to_resource);
  * is not yet created.
  *
  */
+// 解码一个节点的IRQ，并将其作为一个Linux的IRQ号返回
 int of_irq_get(struct device_node *dev, int index)
 {
 	int rc;
